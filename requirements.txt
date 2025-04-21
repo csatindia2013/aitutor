@@ -1,0 +1,7 @@
+Flask
+pytesseract
+Pillow
+opencv-python-headless
+numpy
+openai
+google-api-python-client
