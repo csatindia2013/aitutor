@@ -10,6 +10,9 @@ from googleapiclient.discovery import build
 import cv2
 import numpy as np
 
+# ✅ Ensure Tesseract is available
+pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+
 app = Flask(__name__)
 app.secret_key = str(uuid4())
 UPLOAD_FOLDER = 'uploads'
@@ -17,8 +20,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 DB_PATH = "answers.db"
-import os
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPENAI_API_KEY = "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"
 YOUTUBE_API_KEY = "AIzaSyAwQitt1pq0k-z6Qfw_JJHqYDvqG2bJGB8"
 
 client = OpenAI(api_key=OPENAI_API_KEY)
@@ -150,4 +152,3 @@ if __name__ == '__main__':
     init_db()
     port = int(os.environ.get("PORT", 10000))
     app.run(debug=True, host="0.0.0.0", port=port)
-
