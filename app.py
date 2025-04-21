@@ -18,7 +18,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 DB_PATH = "answers.db"
 import os
-OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+OPENAI_API_KEY = os.environ.get("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")
 
 YOUTUBE_API_KEY = "AIzaSyAwQitt1pq0k-z6Qfw_JJHqYDvqG2bJGB8"
 
