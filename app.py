@@ -9,9 +9,11 @@ from openai import OpenAI
 from googleapiclient.discovery import build
 import cv2
 import numpy as np
+import platform
 
-# ✅ Ensure Tesseract is available
-pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
+# ✅ Cross-platform support for Tesseract
+if platform.system() == 'Windows':
+    pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 app = Flask(__name__)
 app.secret_key = str(uuid4())
