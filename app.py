@@ -112,5 +112,9 @@ def chat():
 
     return render_template("chat.html", conversation=session['conversation'], thinking=thinking)
 
+import os
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port, debug=True)
+
