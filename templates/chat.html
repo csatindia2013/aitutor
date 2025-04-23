@@ -1,32 +1,227 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>🧠 AI Tutor Chat</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f2f4f8;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark-mode {
+      background: #181a1b;
+      color: #ddd;
+    }
+    .container {
+      max-width: 900px;
+      margin: auto;
+    }
+    h2 {
+      text-align: center;
+      color: #0066cc;
+    }
+    body.dark-mode h2 {
+      color: #4ea1ff;
+    }
+    .chat {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+    }
+    body.dark-mode .chat {
+      background: #2b2b2b;
+    }
+    .bubble {
+      padding: 14px 18px;
+      border-radius: 18px;
+      max-width: 90%;
+      margin-bottom: 14px;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .user {
+      background: #dcf8c6;
+      margin-left: auto;
+      text-align: right;
+    }
+    .assistant {
+      background: #f1f0f0;
+      text-align: left;
+      position: relative;
+    }
+    body.dark-mode .assistant {
+      background: #3a3b3c;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 1s linear infinite;
+      margin-top: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 30px;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input[type="file"] {
+      font-size: 14px;
+      background: #eee;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    button {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .actions {
+      margin-top: 10px;
+    }
+    .actions form {
+      display: inline;
+    }
+    .actions button {
+      font-size: 14px;
+      margin-right: 10px;
+      background: #666;
+    }
+
+    .toggle-mode {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      font-size: 14px;
+      background: #555;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .toggle-mode:hover {
+      background: #333;
+    }
+
+    .ai-response::after {
+      content: "|";
+      animation: blink 1s infinite;
+      color: #999;
+      margin-left: 3px;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+    @media (max-width: 600px) {
+      input[type="text"] {
+        width: 100%;
+      }
+    }
+  </style>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
 </head>
 <body>
-  <h2>📚 AI Tutor Assistant</h2>
-  <a href="/clear">🧽 Clear Conversation</a>
-  <div>
-    {% for message in conversation %}
-      {% if message.role == 'user' %}
-        <div style="background:#dcf8c6;">🧑‍🎓 {{ message.content }}</div>
-      {% elif message.role == 'assistant' %}
-        <div style="background:#f0f0f0;">🤖 {{ message.content|safe }}</div>
+  <div class="container">
+    <button class="toggle-mode" onclick="toggleDarkMode()">🌙 Toggle Mode</button>
+    <h2>📚 AI Tutor Assistant</h2>
+    <div class="chat">
+      {% for message in conversation %}
+        {% if message.role == 'user' %}
+          <div class="bubble user">
+            <strong>You:</strong><br>{{ message.content }}
+          </div>
+        {% elif message.role == 'assistant' %}
+          <div class="bubble assistant">
+            <strong>AI:</strong><br>
+            <span class="ai-response" data-response='{{ message.content | tojson }}'></span>
+            <div class="actions">
+              <form method="post">
+                <input type="hidden" name="retry" value='{{ message.content | tojson }}' />
+                <button type="submit">🔁 Explain Again</button>
+              </form>
+              <form method="post">
+                <input type="hidden" name="simplify" value='{{ message.content | tojson }}' />
+                <button type="submit">🧸 Simplify</button>
+              </form>
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      {% if thinking %}
+      <div class="bubble assistant">
+        <em>🧠 Thinking...</em>
+        <div class="loader"></div>
+      </div>
       {% endif %}
-    {% endfor %}
-    {% if thinking %}
-      <p><em>🧠 Thinking...</em></p>
-    {% endif %}
-    <form method="post" enctype="multipart/form-data">
-      <input type="text" name="question" placeholder="Type your question..." />
-      <input type="file" name="image" accept="image/*" capture="environment" />
-      <button type="submit">Ask</button>
-    </form>
+
+      <form method="post" enctype="multipart/form-data">
+        <input type="text" name="question" placeholder="Type your question..." />
+        <input type="file" name="image" accept="image/*" />
+        <button type="submit">Ask</button>
+      </form>
+    </div>
   </div>
+
+  <script>
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+    async function animateText() {
+      const elements = document.querySelectorAll(".ai-response");
+      for (const el of elements) {
+        if (el.innerHTML.trim()) continue;
+
+        const fullText = JSON.parse(el.dataset.response);
+        const words = fullText.split(" ");
+        let html = "";
+
+        for (let word of words) {
+          html += word + " ";
+          el.innerHTML = html;
+          await sleep(35);
+        }
+
+        MathJax.typeset();
+      }
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    window.onload = animateText;
+  </script>
 </body>
 </html>
