@@ -2,30 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>🧠 AI Tutor Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
-    :root {
-      --bg-light: #f2f4f8;
-      --bg-dark: #121212;
-      --text-light: #333;
-      --text-dark: #eee;
-      --user-msg-bg: #dcf8c6;
-      --ai-msg-bg: #f1f0f0;
-      --card-bg-dark: #2a2a2a;
-    }
     body {
       font-family: 'Inter', sans-serif;
+      background: #f2f4f8;
       margin: 0;
       padding: 20px;
-      background: var(--bg-light);
-      color: var(--text-light);
+      color: #333;
       transition: background 0.3s, color 0.3s;
     }
-    .dark body {
-      background: var(--bg-dark);
-      color: var(--text-dark);
+    .dark-mode body {
+      background: #121212;
+      color: #f0f0f0;
     }
     .container {
       max-width: 900px;
@@ -35,14 +26,18 @@
       text-align: center;
       color: #0066cc;
     }
+    .dark-mode h2 {
+      color: #66ccff;
+    }
     .chat {
       background: #fff;
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.05);
     }
-    .dark .chat {
-      background: var(--card-bg-dark);
+    .dark-mode .chat {
+      background: #2b2b2b;
+      box-shadow: none;
     }
     .bubble {
       padding: 14px 18px;
@@ -53,16 +48,20 @@
       line-height: 1.6;
     }
     .user {
-      background: var(--user-msg-bg);
+      background: #dcf8c6;
       margin-left: auto;
       text-align: right;
     }
+    .dark-mode .user {
+      background: #2e7d32;
+      color: #e8ffe6;
+    }
     .assistant {
-      background: var(--ai-msg-bg);
+      background: #f1f0f0;
       text-align: left;
     }
-    .dark .assistant {
-      background: #2e2e2e;
+    .dark-mode .assistant {
+      background: #424242;
     }
     .loader {
       border: 4px solid #f3f3f3;
@@ -83,18 +82,18 @@
       gap: 10px;
       margin-top: 30px;
     }
-    input[type="text"] {
+    input[type="text"], input[type="file"] {
       flex: 1;
       padding: 10px 14px;
       border: 1px solid #ccc;
       border-radius: 8px;
       font-size: 16px;
+      background: #fff;
     }
-    input[type="file"] {
-      font-size: 14px;
-      background: #eee;
-      padding: 8px;
-      border-radius: 8px;
+    .dark-mode input {
+      background: #2c2c2c;
+      color: #f0f0f0;
+      border: 1px solid #555;
     }
     button {
       background: #007bff;
@@ -108,23 +107,28 @@
     button:hover {
       background: #0056b3;
     }
-    .dark-toggle {
-      float: right;
-      margin-bottom: 20px;
+    .dark-mode-toggle {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      background: #444;
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
     }
-    .response-btns {
-      margin-top: 10px;
-    }
-    .response-btns button {
-      margin-right: 10px;
+    .dark-mode .dark-mode-toggle {
+      background: #ddd;
+      color: black;
     }
   </style>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
+  <div class="dark-mode-toggle" onclick="toggleDarkMode()">🌓 Toggle Mode</div>
   <div class="container">
-    <h2>📄 AI Tutor Assistant <button class="dark-toggle" onclick="toggleMode()">🌜 Toggle Mode</button></h2>
+    <h2>📚 AI Tutor Assistant</h2>
     <div class="chat">
       {% for message in conversation %}
         {% if message.role == 'user' %}
@@ -135,27 +139,21 @@
           <div class="bubble assistant">
             <strong>AI:</strong><br>
             <span class="ai-response" data-response='{{ message.content | tojson }}'></span>
-            {% if not loop.previtem or loop.previtem.role != 'assistant' %}
-            <div class="response-btns">
-              <form method="post">
-                <input type="hidden" name="retry" value="{{ message.content }}">
-                <button type="submit">🔄 Explain Again</button>
-              </form>
-              <form method="post">
-                <input type="hidden" name="simplify" value="{{ message.content }}">
-                <button type="submit">🤭 Simplify</button>
-              </form>
-            </div>
-            {% endif %}
+            <form method="post" style="margin-top:10px; display: flex; gap: 8px;">
+              <button name="retry" value="{{ message.content }}">🔁 Explain Again</button>
+              <button name="simplify" value="{{ message.content }}">🧒 Simplify</button>
+            </form>
           </div>
         {% endif %}
       {% endfor %}
+
       {% if thinking %}
       <div class="bubble assistant">
         <em>🧠 Thinking...</em>
         <div class="loader"></div>
       </div>
       {% endif %}
+
       <form method="post" enctype="multipart/form-data">
         <input type="text" name="question" placeholder="Type your question..." />
         <input type="file" name="image" accept="image/*" />
@@ -176,15 +174,15 @@
         for (let word of words) {
           html += word + " ";
           el.innerHTML = html;
-          await sleep(35);
+          await sleep(30);
         }
         MathJax.typeset();
       }
     }
-    window.onload = animateText;
-    function toggleMode() {
-      document.documentElement.classList.toggle('dark');
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark-mode');
     }
+    window.onload = animateText;
   </script>
 </body>
 </html>
