@@ -6,17 +6,26 @@
   <title>🧠 AI Tutor Chat</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-light: #f2f4f8;
+      --bg-dark: #121212;
+      --text-light: #333;
+      --text-dark: #eee;
+      --user-msg-bg: #dcf8c6;
+      --ai-msg-bg: #f1f0f0;
+      --card-bg-dark: #2a2a2a;
+    }
     body {
       font-family: 'Inter', sans-serif;
-      background: #f2f4f8;
       margin: 0;
       padding: 20px;
-      color: #333;
+      background: var(--bg-light);
+      color: var(--text-light);
       transition: background 0.3s, color 0.3s;
     }
-    body.dark-mode {
-      background: #181a1b;
-      color: #ddd;
+    .dark body {
+      background: var(--bg-dark);
+      color: var(--text-dark);
     }
     .container {
       max-width: 900px;
@@ -26,17 +35,14 @@
       text-align: center;
       color: #0066cc;
     }
-    body.dark-mode h2 {
-      color: #4ea1ff;
-    }
     .chat {
       background: #fff;
       border-radius: 12px;
       padding: 20px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.05);
     }
-    body.dark-mode .chat {
-      background: #2b2b2b;
+    .dark .chat {
+      background: var(--card-bg-dark);
     }
     .bubble {
       padding: 14px 18px;
@@ -47,17 +53,16 @@
       line-height: 1.6;
     }
     .user {
-      background: #dcf8c6;
+      background: var(--user-msg-bg);
       margin-left: auto;
       text-align: right;
     }
     .assistant {
-      background: #f1f0f0;
+      background: var(--ai-msg-bg);
       text-align: left;
-      position: relative;
     }
-    body.dark-mode .assistant {
-      background: #3a3b3c;
+    .dark .assistant {
+      background: #2e2e2e;
     }
     .loader {
       border: 4px solid #f3f3f3;
@@ -103,59 +108,23 @@
     button:hover {
       background: #0056b3;
     }
-    .actions {
+    .dark-toggle {
+      float: right;
+      margin-bottom: 20px;
+    }
+    .response-btns {
       margin-top: 10px;
     }
-    .actions form {
-      display: inline;
-    }
-    .actions button {
-      font-size: 14px;
+    .response-btns button {
       margin-right: 10px;
-      background: #666;
-    }
-
-    .toggle-mode {
-      position: absolute;
-      right: 20px;
-      top: 20px;
-      font-size: 14px;
-      background: #555;
-      color: #fff;
-      border: none;
-      padding: 6px 12px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .toggle-mode:hover {
-      background: #333;
-    }
-
-    .ai-response::after {
-      content: "|";
-      animation: blink 1s infinite;
-      color: #999;
-      margin-left: 3px;
-    }
-    @keyframes blink {
-      0%, 100% { opacity: 0; }
-      50% { opacity: 1; }
-    }
-    @media (max-width: 600px) {
-      input[type="text"] {
-        width: 100%;
-      }
     }
   </style>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async
-    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
-  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
   <div class="container">
-    <button class="toggle-mode" onclick="toggleDarkMode()">🌙 Toggle Mode</button>
-    <h2>📚 AI Tutor Assistant</h2>
+    <h2>📄 AI Tutor Assistant <button class="dark-toggle" onclick="toggleMode()">🌜 Toggle Mode</button></h2>
     <div class="chat">
       {% for message in conversation %}
         {% if message.role == 'user' %}
@@ -166,27 +135,27 @@
           <div class="bubble assistant">
             <strong>AI:</strong><br>
             <span class="ai-response" data-response='{{ message.content | tojson }}'></span>
-            <div class="actions">
+            {% if not loop.previtem or loop.previtem.role != 'assistant' %}
+            <div class="response-btns">
               <form method="post">
-                <input type="hidden" name="retry" value='{{ message.content | tojson }}' />
-                <button type="submit">🔁 Explain Again</button>
+                <input type="hidden" name="retry" value="{{ message.content }}">
+                <button type="submit">🔄 Explain Again</button>
               </form>
               <form method="post">
-                <input type="hidden" name="simplify" value='{{ message.content | tojson }}' />
-                <button type="submit">🧸 Simplify</button>
+                <input type="hidden" name="simplify" value="{{ message.content }}">
+                <button type="submit">🤭 Simplify</button>
               </form>
             </div>
+            {% endif %}
           </div>
         {% endif %}
       {% endfor %}
-
       {% if thinking %}
       <div class="bubble assistant">
         <em>🧠 Thinking...</em>
         <div class="loader"></div>
       </div>
       {% endif %}
-
       <form method="post" enctype="multipart/form-data">
         <input type="text" name="question" placeholder="Type your question..." />
         <input type="file" name="image" accept="image/*" />
@@ -197,31 +166,25 @@
 
   <script>
     const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-
     async function animateText() {
       const elements = document.querySelectorAll(".ai-response");
       for (const el of elements) {
         if (el.innerHTML.trim()) continue;
-
         const fullText = JSON.parse(el.dataset.response);
         const words = fullText.split(" ");
         let html = "";
-
         for (let word of words) {
           html += word + " ";
           el.innerHTML = html;
           await sleep(35);
         }
-
         MathJax.typeset();
       }
     }
-
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark-mode");
-    }
-
     window.onload = animateText;
+    function toggleMode() {
+      document.documentElement.classList.toggle('dark');
+    }
   </script>
 </body>
 </html>
