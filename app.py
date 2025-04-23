@@ -6,15 +6,16 @@ from openai import OpenAI
 from uuid import uuid4
 from googleapiclient.discovery import build
 
-# ✅ API keys for testing
-OPENAI_API_KEY = "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"
-YOUTUBE_API_KEY = "AIzaSyAwQitt1pq0k-z6Qfw_JJHqYDvqG2bJGB8"
+# ✅ Replace with secure environment variable use in production
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "your-openai-api-key")
+YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY", "your-youtube-api-key")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'  # Linux Render path
 
 app = Flask(__name__)
 app.secret_key = str(uuid4())
+
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -112,9 +113,7 @@ def chat():
 
     return render_template("chat.html", conversation=session['conversation'], thinking=thinking)
 
-import os
-
+# ✅ Required for Render: Bind to 0.0.0.0 and PORT env var
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port, debug=True)
-
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host="0.0.0.0", port=port)
