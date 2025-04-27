@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {% extends "base.html" %}
 {% block title %}Admin Dashboard{% endblock %}
 {% block content %}
@@ -7,3 +8,23 @@
   <a href="{{ url_for('view_questions') }}" class="btn btn-success btn-lg btn-custom">📚 Manage Questions</a>
 </div>
 {% endblock %}
+=======
+
+<!DOCTYPE html>
+<html><head><title>Admin Panel</title></head>
+<body>
+<h2>🗂 AI Tutor – Admin Panel</h2>
+<table border="1">
+<tr><th>ID</th><th>Question</th><th>Answer</th><th>YouTube</th><th>Time</th></tr>
+{% for row in records %}
+<tr>
+<td>{{ row[0] }}</td>
+<td>{{ row[1] }}</td>
+<td>{{ row[2] }}</td>
+<td>{{ row[3] }}</td>
+<td>{{ row[4] }}</td>
+</tr>
+{% endfor %}
+</table>
+</body></html>
+>>>>>>> 5566a9f84ac137b50a9021c3c13c8aa0df331d63
