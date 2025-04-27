@@ -1,0 +1,10 @@
+openai==0.28
+
+Flask
+pytesseract
+Pillow
+google-api-python-client
+opencv-python
+numpy
+rapidfuzz
+python-dotenv

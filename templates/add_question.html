@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Add New Question{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <h2 class="page-title">➕ Add New Question</h2>
+    <form method="POST" class="card p-4 shadow-sm">
+      <div class="mb-3">
+        <label class="form-label">Question:</label>
+        <textarea class="form-control" name="question" rows="3" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Answer:</label>
+        <textarea class="form-control" name="answer" rows="5" required></textarea>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">YouTube Video URL (optional):</label>
+        <input type="text" class="form-control" name="video_url" />
+      </div>
+      <button type="submit" class="btn btn-primary">➕ Add Question</button>
+      <a href="{{ url_for('view_questions') }}" class="btn btn-secondary">⬅️ Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
